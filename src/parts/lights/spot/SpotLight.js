@@ -1,0 +1,2 @@
+class SpotLight extends LightBase {
+}
