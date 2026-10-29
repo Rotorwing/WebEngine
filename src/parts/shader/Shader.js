@@ -45,12 +45,12 @@ class Shader {
             },
             primitive: {
                 topology: 'triangle-list',
-                cullMode: 'back',
+                cullMode: 'back', // back
             },
             depthStencil: {
                 depthWriteEnabled: true,
                 depthCompare: 'less',
-                format: 'depth24plus',
+                format: 'depth24plus-stencil8',
             }
         }
 
@@ -75,11 +75,12 @@ class Shader {
         this._module = engine.device.createShaderModule({label: this._label, code: this._code});
 
         this.pipelineSettings.module = this._module;
-        this.pipelineSettings.fragment.module = this._module;
         this.pipelineSettings.vertex.module = this._module;
-        
-        if(this.pipelineSettings.fragment.targets.length === 0){
-            this.pipelineSettings.fragment.targets.push({format: engine.presentationFormat});
+        if(this.pipelineSettings.fragment){
+            this.pipelineSettings.fragment.module = this._module;
+            if(this.pipelineSettings.fragment.targets.length === 0){
+                this.pipelineSettings.fragment.targets.push({format: engine.presentationFormat});
+            }
         }
 
         this.onBuildPipeline(this, engine);
@@ -96,6 +97,10 @@ class Shader {
 
     get pipeline(){
         return this._pipeline;
+    }
+
+    get label(){
+        return this._label;
     }
 
     markDirty(){
@@ -121,12 +126,12 @@ class ShaderTextureRequirement {
 class ShaderStore {
 
     static shaders = {};
-    constructor(name, shader){
-        ShaderStore.addShader(name, shader);
+    constructor(shader){
+        ShaderStore.addShader(shader);
     }
 
-    static addShader(name, shader){
-        ShaderStore.shaders[name] = shader;
+    static addShader(shader){
+        ShaderStore.shaders[shader._label] = shader;
     }
 
     static getShader(name){

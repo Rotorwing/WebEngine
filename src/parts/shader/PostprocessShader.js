@@ -18,11 +18,11 @@ class PostprocessShader extends Shader {
                 topology: 'triangle-list',
                 cullMode: 'none',
             },
-            // depthStencil: {
-            //     depthWriteEnabled: true,
-            //     depthCompare: 'less',
-            //     format: 'depth24plus',
-            // }
+            depthStencil: {
+                depthWriteEnabled: false,
+                depthCompare: 'always',
+                format: 'depth24plus-stencil8',
+            }
         }
     }
 }

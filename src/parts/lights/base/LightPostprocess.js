@@ -21,20 +21,27 @@ class LightPostprocess extends Postprocess {
             { // renderView
                 view: undefined,
                 clearValue: [0.0, 0.0, 0.0, 1.0],
-                loadOp: 'clear',
+                loadOp: 'load',
                 storeOp: 'store',
             }
             ],
-            // depthStencilAttachment: {
-            //     view: undefined,
-            //     depthClearValue: 1,
-            //     depthLoadOp: 'clear',
-            //     depthStoreOp: 'store',
-            // },
+            depthStencilAttachment: {
+                view: undefined,
+                depthReadOnly: true,
+                stencilReadOnly: true,
+            },
         };
+    }
+    set targetView(view){
+        this.renderDescriptor.colorAttachments[0].view = view;
+    }
+
+    set stencilView(view){
+        this.renderDescriptor.depthStencilAttachment.view = view;
     }
 
     setup(){
+        super.setup();
         const device = this._engine.device;
         
         this.deferredRenderTargets[0].texture = this._engine.deferredRenderTargets[0].view
@@ -46,7 +53,7 @@ class LightPostprocess extends Postprocess {
         this.deferredRenderTargets[2].texture = this._engine.deferredRenderTargets[2].view
         this.deferredRenderTargets[2].sampler = device.createSampler({magFilter: 'linear', minFilter: 'linear'});
 
-        this.deferredRenderTargets[3].texture = this._engine.deferredRenderTargets[3].view
+        this.deferredRenderTargets[3].texture = this._engine.deferredRenderTargets[3].depthView
         // no sampler for depth texture
 
         // this.renderDescriptor.colorAttachments[0].view = this._engine.deferredRenderTargets[4].view
@@ -82,7 +89,7 @@ class LightPostprocess extends Postprocess {
         this.deferredRenderTargets[0].texture = this._engine.deferredRenderTargets[0].view
         this.deferredRenderTargets[1].texture = this._engine.deferredRenderTargets[1].view
         this.deferredRenderTargets[2].texture = this._engine.deferredRenderTargets[2].view
-        this.deferredRenderTargets[3].texture = this._engine.deferredRenderTargets[3].view
+        this.deferredRenderTargets[3].texture = this._engine.deferredRenderTargets[3].depthView
 
 
         this.build();

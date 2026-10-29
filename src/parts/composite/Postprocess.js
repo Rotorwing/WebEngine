@@ -83,7 +83,9 @@ class Postprocess extends Material {
 
     render(commandEncoder, engine, globalBindGroup=null, vertexIndex=0, alterPass=null){
         this.onRender(engine);
+        // if(this.name.includes("output") && !this.asbs){ console.log("descriptor", this.renderDescriptor); this.asbs = 1; }
         const passEncoder = commandEncoder.beginRenderPass(this.renderDescriptor);
+        // passEncoder.setStencilReference(1);
         this.renderWithPass(passEncoder, engine, globalBindGroup, vertexIndex, alterPass, false);
 
         passEncoder.end();

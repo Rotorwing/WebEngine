@@ -58,6 +58,11 @@ struct FragmentUniforms {
 //   return p.xyz / p.w;
 // }
 
+fn lightRangeCutoff(r: f32, range: f32) -> f32 {
+    let cut = 0.85 * range;
+    return saturate(mix(1.0, 0.0, (r - cut) / (range - cut)));
+}
+
 fn worldPosFromDepth(uv: vec2f, depth: f32) -> vec3f {
   let ndc = vec3f(uv.x * 2.0 - 1.0, 1.0 - uv.y * 2.0, depth);
   let p = globalUniforms.viewProjInv * vec4f(ndc, 1.0);
@@ -74,9 +79,15 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4f {
     let size = vec2f(textureDimensions(deferredTargetD));
     let depth = textureLoad(deferredTargetD, vec2i(input.uv * size), 0);
 
-    let lightPositionW = uniformData[input.offset + 0];
-    let lightColor = uniformData[input.offset + 1].xyz;
-    let lightIntensity = uniformData[input.offset + 1].w;
+    // let lightPositionW = uniformData[input.offset + 0];
+    // let lightColor = uniformData[input.offset + 1].xyz;
+    // let lightIntensity = uniformData[input.offset + 1].w;
+
+
+    let lightPositionW = uniformData[input.offset + 3];
+    let lightColor = uniformData[input.offset + 4].xyz;
+    let lightIntensity = uniformData[input.offset + 4].w;
+    let range = uniformData[input.offset + 5].x;
 
     let positionW = worldPosFromDepth(input.uv, depth);
 
@@ -87,12 +98,14 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4f {
     let lightDistance = length(toLight);
     let lightDir = normalize(toLight);
 
-    let intensity = lightIntensity / (lightDistance * lightDistance);
+    let intensity = lightRangeCutoff(lightDistance, range) * lightIntensity / (lightDistance * lightDistance);
 
     var a_normal = normalize(normalColor * 2.0 - 1.0);
     var l = max(dot(a_normal, lightDir) * 0.5 + 0.8, 0.0);
 
+    
     let lighting = lightColor * intensity * l;
+    // let lighting = lightColor;
 
     var finalColor = vec4f(diffuseColor * lighting, 1.0);
     
@@ -125,6 +138,16 @@ pointLightShader.pipelineSettings.fragment.targets = [
         },
     },
 ]
+
+pointLightShader.pipelineSettings.depthStencil = {
+    depthWriteEnabled: false,
+    depthCompare: 'always',
+    format: 'depth24plus-stencil8',
+    stencilFront: { compare: "not-equal", failOp: "keep", depthFailOp: "keep", passOp: "keep" },
+    stencilBack:  { compare: "not-equal", failOp: "keep", depthFailOp: "keep", passOp: "keep" },
+    // stencilFront: { compare: "always", failOp: "keep", depthFailOp: "keep", passOp: "keep" },
+    // stencilBack:  { compare: "always", failOp: "keep", depthFailOp: "keep", passOp: "keep" },
+}
 
 pointLightShader.onBuildPipeline = (shader, engine)=>{
     const device = engine.device;
@@ -190,4 +213,4 @@ pointLightShader.onBuildPipeline = (shader, engine)=>{
 
 }
 
-ShaderStore.addShader("pointLightShader", pointLightShader);
+ShaderStore.addShader(pointLightShader);

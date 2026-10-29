@@ -2,7 +2,7 @@ class OutputPostprocess extends Postprocess {
     constructor(name, engine, shader) {
         super(name, engine, shader);
 
-        this.deferredRenderTargets = [
+        this.renderTargets = [
             {texture:null,
             sampler:null},
         ]
@@ -14,6 +14,7 @@ class OutputPostprocess extends Postprocess {
                 clearValue: [0.0, 0.0, 0.0, 1.0],
                 loadOp: 'clear',
                 storeOp: 'store',
+                depthReadOnly: true,
             }
             ],
             // depthStencilAttachment: {
@@ -28,14 +29,14 @@ class OutputPostprocess extends Postprocess {
     setup(){
         const device = this._engine.device;
         
-        this.deferredRenderTargets[0].texture = this._engine.deferredRenderTargets[4].view
+        this.renderTargets[0].texture = this._engine.deferredRenderTargets[4].view
         // no sampler for depth texture
 
-        // this.renderDescriptor.colorAttachments[0].view = this.deferredRenderTargets[0].texture.view;
-        // this.renderDescriptor.colorAttachments[1].view = this.deferredRenderTargets[1].texture.view;
-        // this.renderDescriptor.colorAttachments[2].view = this.deferredRenderTargets[2].texture.view;
+        // this.renderDescriptor.colorAttachments[0].view = this.renderTargets[0].texture.view;
+        // this.renderDescriptor.colorAttachments[1].view = this.renderTargets[1].texture.view;
+        // this.renderDescriptor.colorAttachments[2].view = this.renderTargets[2].texture.view;
 
-        this.setTexture("renderResult", this.deferredRenderTargets[0]);
+        this.setTexture("renderResult", this.renderTargets[0]);
 
         this.build();
     }
@@ -50,15 +51,25 @@ class OutputPostprocess extends Postprocess {
         const colorTexture = engine._context.getCurrentTexture();
         this.renderDescriptor.colorAttachments[0].view = colorTexture.createView();
 
-        // this.setTexture("deferredTarget0", 0, this.deferredRenderTargets[0]);
-        // this.setTexture("deferredTarget1", 1, this.deferredRenderTargets[1]);
-        // this.setTexture("deferredTarget2", 2, this.deferredRenderTargets[2]);
-        // this.setTexture("deferredTargetD", 3, this.deferredRenderTargets[3]);
+        // this.setTexture("deferredTarget0", 0, this.renderTargets[0]);
+        // this.setTexture("deferredTarget1", 1, this.renderTargets[1]);
+        // this.setTexture("deferredTarget2", 2, this.renderTargets[2]);
+        // this.setTexture("deferredTargetD", 3, this.renderTargets[3]);
     }
 
     onResize(engine){
-        this.deferredRenderTargets[0].texture = this._engine.deferredRenderTargets[4].view
+        this.renderTargets[0].texture = this._engine.deferredRenderTargets[4].view
 
         this.build();
     }
 }
+
+
+/*
+Attachment state of [RenderPipeline "outputPostprocessShader_pipeline"] is not compatible with [RenderPassEncoder (unlabeled)].
+[RenderPassEncoder (unlabeled)] expects an attachment state of                 { colorTargets: [0={format:TextureFormat::BGRA8Unorm}], sampleCount: 1 }.
+[RenderPipeline "outputPostprocessShader_pipeline"] has an attachment state of { colorTargets: [0={format:TextureFormat::BGRA8Unorm}], depthStencilFormat: TextureFormat::Depth24PlusStencil8, sampleCount: 1 }.
+ - While encoding [RenderPassEncoder (unlabeled)].SetPipeline([RenderPipeline "outputPostprocessShader_pipeline"]).
+ - While finishing [CommandEncoder (unlabeled)].
+
+ */

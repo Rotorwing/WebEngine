@@ -41,7 +41,8 @@ outputPostprocessShader.addTextureRequirement("renderResult", 0, true);
 
 outputPostprocessShader.pipelineSettings.fragment.targets = [
     {format: "bgra8unorm"}, // Need to get this from engine
-]
+];
+outputPostprocessShader.pipelineSettings.depthStencil = undefined;
 
 outputPostprocessShader.onBuildPipeline = (shader, engine)=>{
     const device = engine.device;
@@ -67,4 +68,4 @@ outputPostprocessShader.onBuildPipeline = (shader, engine)=>{
 
 }
 
-ShaderStore.addShader("outputPostprocessShader", outputPostprocessShader);
+ShaderStore.addShader(outputPostprocessShader);

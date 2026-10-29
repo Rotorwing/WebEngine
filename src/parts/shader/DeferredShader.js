@@ -56,8 +56,6 @@ fn vs_main(input: VertexInput) -> VertexOutput {
     output.normal = worldNormal * input.normal;
     output.UV = input.texcoord;
 
-    output.position = globalUniforms.viewProj * world* input.position;
-
     return output;
 }
 
@@ -214,4 +212,4 @@ deferredShader.onBuildPipeline = (shader, engine)=>{
 
 }
 
-ShaderStore.addShader("deferredShader", deferredShader);    
+ShaderStore.addShader(deferredShader);

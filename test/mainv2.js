@@ -12,7 +12,10 @@ engine.camera.bindMouseEvents(canvas);
 
 await engine.setup();
 
-await GLBLoader.loadBase64Async(window.demoMeshv2Glb, engine);
+const glbNodes = await GLBLoader.loadBase64Async(window.demoMeshv2Glb, engine);
+for (const node of glbNodes) {
+    engine.addMesh(node);
+}
 
 engine.camera.position = glMatrix.vec3.fromValues(1, 4, 5);
 engine.camera.lookAt(glMatrix.vec3.fromValues(0, 0, 0));
@@ -32,9 +35,14 @@ boxMaterial.setDiffuseTexture(tex);
 boxMaterial.build();
 
 box = new Box("box", engine, 1, 1, 1, boxMaterial);
-box.position = glMatrix.vec3.fromValues(-0.5, 0, -0.1);
-// box2 = new Box("box2", engine, 1, 1, 1, boxMaterial);
-// engine.addMesh(box);
+// box.position = glMatrix.vec3.fromValues(-0.5, 0, -0.1);
+box2 = new Box("box2", engine, 1, 1, 1, boxMaterial);
+engine.addMesh(box);
+
+// sphere = new Icosphere("sphere", engine, 1, 3, boxMaterial);
+// sphere.position = glMatrix.vec3.fromValues(0.5, 1, 0.1);
+// engine.addMesh(sphere);
+
 
 for (let i = 0; i < 10; i++) {
   let box2 = new Mesh("box2", engine, box.meshData, boxMaterial);
@@ -45,13 +53,24 @@ for (let i = 0; i < 10; i++) {
   engine.addMesh(box2);
 }
 
-light = new PointLight("pointLight1", engine, {intensity: 2.5, color: [1.0, 1.0, 1.0]});
+light = new PointLight("pointLight1", engine, {intensity: 5.5, color: [1.0, 1.0, 1.0], range: 3.75});
 light.setup();
+light.position = glMatrix.vec3.fromValues(0.5, 0.5, 0.5);
 engine.addLight(light);
+
+// light2 = new PointLight("pointLight2", engine, {intensity: 0.5, color: [1.0, 0.0, 1.0], range: 6.75});
+// light2.setup();
+// light2.position = glMatrix.vec3.fromValues(-0.5, 0.5, 0.5);
+// engine.addLight(light2);
+
+// light3 = new PointLight("pointLight3", engine, {intensity: 0.5, color: [0.0, 1.0, 1.0], range: 6.75});
+// light3.setup();
+// light3.position = glMatrix.vec3.fromValues(-0.5, -0.5, -0.5);
+// engine.addLight(light3);
 
 colored = [];
 for (let i = 0; i < 5; i++) {
-  let light2 = new PointLight("pointLight2", engine, {intensity: 0.5, color: [Math.random(), Math.random(), Math.random()]});
+  let light2 = new PointLight("pointLight2", engine, {intensity: 0.5, color: [Math.random(), Math.random(), Math.random()], range: 3.0});
   light2.position = glMatrix.vec3.fromValues(1.5, 0, 1.0);
   light2.setup();
   engine.addLight(light2);

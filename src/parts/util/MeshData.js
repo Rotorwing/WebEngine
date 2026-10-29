@@ -16,4 +16,8 @@ class MeshData {
         };
 
     }
+
+    get indexCount() {
+        return this._indices ? this._indices.length : 0;
+    }
 }

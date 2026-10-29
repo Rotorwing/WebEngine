@@ -73,13 +73,17 @@ class WebEngine {
                 depthClearValue: 1,
                 depthLoadOp: 'clear',
                 depthStoreOp: 'store',
+
+                stencilReadOnly: true,
             },
         };
 
         this.globalBindGroup = null;
 
         this.lights = [];
-
+        this.renderProcesses = {
+            "clearLightTarget": null,
+        };
         this.postprocesses = [new OutputPostprocess("output",this, ShaderStore.shaders['outputPostprocessShader'])];//new DeferredCompositePostprocess("deferredComposite",this, ShaderStore.shaders['deferredCompositeShader'])];
 
         this._lastDrawTime = performance.now();
@@ -108,6 +112,7 @@ class WebEngine {
         PlaceholderTextures.buildPlaceholderTextures(this);
 
         this._setupLights();
+        this._setupRenderProcesses();
         this._setupPostprocesses();
 
 
@@ -263,6 +268,10 @@ class WebEngine {
         });
     }
 
+    _setupRenderProcesses(){
+        this.renderProcesses["clearLightTarget"] = new ClearPostprocess("clearLightTarget", this, this.deferredRenderTargets[4]);
+    }
+
     _setupPostprocesses(){
         // Postprocess.buildBuffers(this);
 
@@ -354,6 +363,11 @@ class WebEngine {
     addLight(light){
         light.uniformIndex = this._allocateDataBuffer(light.name, light.uniformLength);
         this._writeLightTransformToDataBuffer(light);
+        if(!this.getMeshDataLoaded(light.meshData)){
+            this.addMeshData(light.meshData);
+        }
+        light.targetView = this.deferredRenderTargets[4].view;
+        light.stencilView = this.deferredRenderTargets[3].view;
         this.lights.push(light);
     }
 
@@ -591,28 +605,30 @@ class WebEngine {
         // passEncoder.drawIndexed(mesh.meshData._indices.length);
         // passEncoder.draw(mesh.meshData._indices.length, 1, 0, mesh.uniformIndex);
 
-        passEncoder.drawIndexed(mesh.meshData._indices.length, 1, 0, 0, mesh.uniformIndex/4); // Divide by 4 because it is indexed by blocks of vec4s
+        passEncoder.drawIndexed(mesh.meshData.indexCount, 1, 0, 0, mesh.uniformIndex/4); // Divide by 4 because it is indexed by blocks of vec4s
     }
 
     _renderLights(commandEncoder){
-        const passEncoder = commandEncoder.beginRenderPass(
-        {
-            colorAttachments: [
-            { // renderView
-                view: this.deferredRenderTargets[4].view,
-                clearValue: [0.0, 0.0, 0.0, 1.0],
-                loadOp: 'clear',
-                storeOp: 'store',
-            }
-            ]
-        }
-        );
+        this.renderProcesses["clearLightTarget"].render(commandEncoder, this);
+        // const passEncoder = commandEncoder.beginRenderPass(
+        // {
+        //     colorAttachments: [
+        //     { // renderView
+        //         view: this.deferredRenderTargets[4].view,
+        //         clearValue: [0.0, 0.0, 0.0, 1.0],
+        //         loadOp: 'clear',
+        //         storeOp: 'store',
+        //     }
+        //     ]
+        // }
+        // );
         for(const light of this.lights){
             // light.postprocess.updateUniforms();
             this._writeLightTransformToDataBuffer(light);
-            light.renderWithPass(passEncoder, this, this.globalBindGroup);
+            // light.renderWithPass(passEncoder, this, this.globalBindGroup);
+            light.render(commandEncoder, this, this.buffersGPU, this.globalBindGroup);
         }
-        passEncoder.end();
+        // passEncoder.end();
     }
 
     _postprocess(commandEncoder){

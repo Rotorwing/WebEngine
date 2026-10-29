@@ -32,30 +32,28 @@ class GLBLoader {
             offset += 8 + chunkLength;
         }
 
-        const endTime = performance.now();
-        console.log(`GLB loaded in ${(endTime - startTime).toFixed(2)} ms`);
 
         const bufferViews = await GLBLoader.loadBufferViewsAsync(jsonData, binData);
-        console.log("bufferViews:", bufferViews);
+        console.log("bufferViews:", bufferViews.length);
 
         const accessors = await GLBLoader.buildAccessorsAsync(jsonData, bufferViews);
-        console.log("accessors:", accessors);
+        console.log("accessors:", accessors.length);
 
         const images = await GLBLoader.loadImagesAsync(jsonData, bufferViews, engine);
-        console.log("images:", images);
+        console.log("images:", images.length);
 
         const materials = await GLBLoader.buildMaterialsAsync(jsonData, images, engine);
-        console.log("materials:", materials);
+        console.log("materials:", materials.length);
 
         const mesheDatas = await GLBLoader.buildMeshDatasAsync(jsonData, accessors);
-        console.log("meshDatats:", mesheDatas);
+        console.log("meshDatats:", mesheDatas.length);
 
         const nodes = await GLBLoader.buildNodesAsync(jsonData, mesheDatas, materials, engine);
-        console.log("nodes:", nodes);
+        console.log("nodes:", nodes.length);
 
-        for (const node of nodes) {
-            engine.addMesh(node);
-        }
+        // for (const node of nodes) {
+        //     engine.addMesh(node);
+        // }
         // engine.addMesh(nodes[0]);
 
 
@@ -64,8 +62,10 @@ class GLBLoader {
         //     GLBLoader.loadImagesAsync(jsonData, bufferViews)
         // ]);
 
+        const endTime = performance.now();
+        console.log(`GLB loaded in ${(endTime - startTime).toFixed(2)} ms`);
 
-        return chunks;
+        return nodes;
     }
 
     static loadJSONChunk(data) {
@@ -180,10 +180,10 @@ class GLBLoader {
             const uvsAccessor = accessors[primitive.attributes.TEXCOORD_0];
             const indicesAccessor = accessors[primitive.indices];
 
-            console.log("positionsAccessor:", positionsAccessor);
-            console.log("normalsAccessor:", normalsAccessor);
-            console.log("uvsAccessor:", uvsAccessor);
-            console.log("indicesAccessor:", indicesAccessor);
+            // console.log("positionsAccessor:", positionsAccessor);
+            // console.log("normalsAccessor:", normalsAccessor);
+            // console.log("uvsAccessor:", uvsAccessor);
+            // console.log("indicesAccessor:", indicesAccessor);
 
             meshData._positions = positionsAccessor;
             meshData._normals = normalsAccessor;

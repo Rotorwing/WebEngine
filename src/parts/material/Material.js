@@ -60,11 +60,11 @@ class Material {
     }
 
     _buildBindGroup(){
-        let ents = this._getBindGroupEntries();
-        for(let n in ents){
-            console.log(ents[n]);
-        }
-        console.log(this._shader.localBindGroupLayout);
+        // let ents = this._getBindGroupEntries();
+        // for(let n in ents){
+        //     console.log(ents[n]);
+        // }
+        // console.log(this._shader.localBindGroupLayout);
         if(this._shader.localBindGroupLayout){
             this._bindGroup = this._engine.device.createBindGroup({
                 layout: this._shader.localBindGroupLayout,
